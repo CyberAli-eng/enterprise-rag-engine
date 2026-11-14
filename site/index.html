@@ -54,6 +54,7 @@
     th { font-weight: 600; color: var(--muted); font-size: 13px; text-transform: uppercase; letter-spacing: .05em; }
     code { font-family: "IBM Plex Mono", monospace; font-size: .92em; }
     .note { font-size: 14px; color: var(--muted); }
+    video { width: 100%; border-radius: 8px; border: 1px solid var(--line); background: #000; display: block; }
     footer { padding: 32px 0 48px; color: var(--muted); font-size: 14px; }
   </style>
 </head>
@@ -64,11 +65,24 @@
       <h1>Enterprise RAG Engine</h1>
       <p class="lede">A secure Retrieval-Augmented Generation service that connects unstructured company documents to LLMs, with tenant isolation, swappable providers and answers that cite their sources.</p>
       <div class="actions">
-        <a class="btn primary" href="docs.html">Explore the API</a>
+        <a class="btn primary" href="#demo">Watch the demo</a>
+        <a class="btn" href="docs.html">Explore the API</a>
         <a class="btn" href="https://github.com/CyberAli-eng/enterprise-rag-engine">View source on GitHub</a>
       </div>
     </div>
   </header>
+
+  <section id="demo">
+    <div class="wrap">
+      <h2>Watch the demo</h2>
+      <p class="sub">Two companies upload their own documents and ask the same question. Only the company that owns the answer gets it. Recorded against the engine running locally on Llama 3.2 via Ollama.</p>
+      <video controls preload="metadata" playsinline poster="demo-poster.jpg">
+        <source src="demo.mp4" type="video/mp4" />
+        <track kind="captions" src="demo.vtt" srclang="en" label="English" default />
+        Your browser can't play this video. <a href="demo.mp4">Download it</a>.
+      </video>
+    </div>
+  </section>
 
   <section>
     <div class="wrap">
@@ -77,7 +91,7 @@
       <div class="grid">
         <div class="cell"><h3>Secure by default</h3><p>API-key auth, rate limiting, a CORS allow-list, upload size and type checks, and zero secrets in source control.</p></div>
         <div class="cell"><h3>Multi-tenant</h3><p>Every chunk carries a <code>tenant_id</code>, and retrieval is filtered by it, so one customer's documents never reach another's answers.</p></div>
-        <div class="cell"><h3>Provider-agnostic</h3><p>Swap OpenAI for Llama-3 (Groq or Together) and Chroma for Pinecone with one environment variable.</p></div>
+        <div class="cell"><h3>Provider-agnostic</h3><p>Swap OpenAI for Llama-3 (Groq or Together) or a free local model via Ollama, and Chroma for Pinecone, with one environment variable.</p></div>
         <div class="cell"><h3>Grounded answers</h3><p>The model answers only from retrieved context and returns the source snippets, so claims can be checked.</p></div>
         <div class="cell"><h3>Tested</h3><p>A pytest suite covers auth enforcement and chunking, with CI and secret scanning on every push.</p></div>
         <div class="cell"><h3>Runs anywhere</h3><p>Docker and docker-compose included; local embeddings (MiniLM) mean no paid API is needed to start.</p></div>
@@ -121,8 +135,11 @@
       <p class="sub">This page and the API reference are static. To call the API, run the service locally:</p>
 <pre>git clone https://github.com/CyberAli-eng/enterprise-rag-engine.git
 cd enterprise-rag-engine
-cp .env.example .env        # add your keys
-docker compose up --build   # API on http://localhost:8000, docs at /docs</pre>
+cp .env.example .env        # add your keys, or set LLM_PROVIDER=ollama
+docker compose up --build   # API on http://localhost:8000, docs at /docs
+
+# free & local, no API key: Ollama + Llama 3.2
+docker compose --profile local up --build</pre>
       <p class="note">Built by <a href="https://github.com/CyberAli-eng">Ali Khusroo Bin Sabir</a> · MIT licensed</p>
     </div>
   </section>

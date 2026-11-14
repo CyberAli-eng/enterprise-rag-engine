@@ -8,8 +8,10 @@ LLM provider abstraction.
                 talking point for a portfolio piece.
 - "together" -> Together AI, another OpenAI-compatible host for Llama-3 /
                 Mixtral etc.
+- "ollama"   -> a local model served by Ollama (free, nothing leaves the
+                machine; no API key needed).
 
-All three speak the OpenAI-compatible chat completions protocol, so we only
+All of them speak the OpenAI-compatible chat completions protocol, so we only
 need one client class with a swappable base_url + api_key.
 """
 from functools import lru_cache
@@ -24,10 +26,21 @@ _PROVIDER_BASE_URLS = {
     "together": "https://api.together.xyz/v1",
 }
 
+# Ollama ignores the key, but the OpenAI client requires a non-empty one.
+_OLLAMA_PLACEHOLDER_KEY = "ollama"
+
 
 @lru_cache
 def get_llm() -> ChatOpenAI:
     settings = get_settings()
+
+    if settings.llm_provider == "ollama":
+        return ChatOpenAI(
+            model=settings.llm_model,
+            api_key=settings.openai_api_key or _OLLAMA_PLACEHOLDER_KEY,
+            base_url=settings.openai_api_base or settings.ollama_base_url,
+            temperature=settings.llm_temperature,
+        )
 
     if not settings.openai_api_key:
         raise RuntimeError(
