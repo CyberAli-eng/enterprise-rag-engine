@@ -10,7 +10,7 @@ Secure Retrieval-Augmented Generation service that connects unstructured corpora
 
 [![Demo: two tenants ask the same question; only the tenant that owns the document gets an answer](docs/demo.gif)](https://cyberali-eng.github.io/enterprise-rag-engine/#demo)
 
-▶ **[Watch the 2-minute demo with voice-over](https://cyberali-eng.github.io/enterprise-rag-engine/#demo)** · [Project page & API docs](https://cyberali-eng.github.io/enterprise-rag-engine/)
+▶ **[Watch the 2-minute demo with voice-over](https://cyberali-eng.github.io/enterprise-rag-engine/#demo)** · [Project page & API docs](https://cyberali-eng.github.io/enterprise-rag-engine/) · [Write-up on DEV](https://dev.to/cyberalieng/multi-tenant-rag-stop-one-customers-documents-leaking-into-anothers-answers-4i3h)
 
 ## Why this exists
 
