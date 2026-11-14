@@ -17,10 +17,10 @@ Secure Retrieval-Augmented Generation service that connects unstructured corpora
 Most RAG tutorials wire an LLM straight to a vector store with no auth, no tenant boundaries, and API keys hardcoded in a script. This project is the opposite: a small, honest reference implementation of what "production-grade" actually requires —
 
 - **Secure by default** — API-key auth, rate limiting, CORS allow-list, file-size/type validation on uploads, zero secrets in source control.
-- **Multi-tenant** — every chunk is stamped with a `tenant_id`; retrieval is filtered so one customer's documents never leak into another's answers.
+- **Multi-tenant** — every chunk is stamped with a `tenant_id`; retrieval is filtered so one customer's documents never leak into another's answers, and API keys can be bound to the tenants they may access.
 - **Provider-agnostic** — swap OpenAI ⇄ Llama-3 (via Groq/Together) ⇄ a **free local model via Ollama**, and Chroma ⇄ Pinecone, with one environment variable, no code changes.
 - **Grounded answers** — the LLM is instructed to answer only from retrieved context and to cite sources; retrieved snippets are returned alongside every answer so claims are verifiable, not trusted blindly.
-- **Actually tested** — a real pytest suite covers auth enforcement and chunking, run in CI on every push, alongside automated secret-scanning.
+- **Actually tested** — a real pytest suite covers auth, tenant isolation, key-to-tenant binding and chunking, run in CI on every push, alongside automated secret-scanning.
 
 ## Architecture
 
@@ -136,6 +136,21 @@ curl -X POST http://localhost:8000/query \
   -d '{"question": "What is the refund policy?", "tenant_id": "acme-corp"}'
 ```
 
+### Bind API keys to tenants
+
+By default any valid key may pass any `tenant_id`, which suits a trusted backend calling the engine on behalf of its users. To give keys straight to customers, bind each key to its tenants:
+
+```bash
+API_KEYS=acme-key,globex-key,admin-key
+API_KEY_TENANTS={"acme-key":["acme"],"globex-key":["globex"],"admin-key":["*"]}
+STRICT_TENANT_BINDING=true   # reject any key without an entry
+```
+
+- A key may only ingest into and query its own tenants. Any other `tenant_id` returns **403** before a file is read or a search runs.
+- A key bound to one tenant doesn't need to send `tenant_id`; it's filled in for it.
+- A key bound to several tenants must say which one, or gets **400**. `"*"` means all tenants.
+- Keys without an entry keep the default behaviour unless `STRICT_TENANT_BINDING=true`.
+
 ### Run tests
 
 ```bash
@@ -168,13 +183,13 @@ Live demo: _add your deployed URL here once hosted_.
 - `.env` is git-ignored; only `.env.example` (placeholders) is committed.
 - CI runs TruffleHog on every push to catch any credential that slips through review.
 - Per-tenant metadata filtering prevents cross-tenant document leakage at the retrieval layer, not just at the application layer. Every search is scoped to exactly one tenant; a request without `tenant_id` uses the `default` tenant, never all tenants.
-- **Trust boundary:** API keys are service-level, so any valid key may pass any `tenant_id`. That fits a trusted backend calling the engine on behalf of its users. Before exposing the API directly to end users, bind keys to tenants or put JWT auth in front (see Roadmap).
+- **Trust boundary:** by default API keys are service-level, so any valid key may pass any `tenant_id`. That fits a trusted backend calling the engine on behalf of its users. Before giving keys to end customers, [bind them to tenants](#bind-api-keys-to-tenants) with `API_KEY_TENANTS` and turn on `STRICT_TENANT_BINDING`.
 
 ## Roadmap
 
 - [ ] Swap in-memory rate limiting for Redis when running multiple instances
 - [ ] Add JWT-based user auth in front of the API-key service layer
-- [ ] Bind API keys to the tenants they may access
+- [x] Bind API keys to the tenants they may access
 - [ ] Streaming responses (SSE) for the `/query` endpoint
 - [ ] PDF/DOCX ingestion support alongside `.txt`/`.md`
 

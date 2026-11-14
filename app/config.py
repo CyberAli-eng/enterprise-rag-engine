@@ -25,6 +25,13 @@ class Settings(BaseSettings):
     api_keys: str = Field(default="", description="Comma separated list of accepted API keys")
     allowed_origins: str = Field(default="*", description="Comma separated list of allowed CORS origins")
     rate_limit_per_minute: int = 60
+    # Optional tenant scoping per API key, as JSON, e.g.
+    # API_KEY_TENANTS={"acme-key": ["acme"], "admin-key": ["*"]}
+    api_key_tenants: dict[str, list[str]] = Field(
+        default_factory=dict, description="Tenants each API key may access; '*' means all"
+    )
+    # When true, API keys without an API_KEY_TENANTS entry are rejected (recommended in production).
+    strict_tenant_binding: bool = False
 
     # --- LLM provider ---
     llm_provider: Literal["openai", "groq", "together", "ollama"] = "openai"
