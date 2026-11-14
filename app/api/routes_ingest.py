@@ -1,8 +1,9 @@
 import logging
+from typing import Optional
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
 
-from app.core.security import enforce_rate_limit
+from app.core.security import authorize_tenant, enforce_rate_limit, verify_api_key
 from app.models.schemas import IngestResponse
 from app.services.chunking import chunk_documents
 from app.services.vector_store import add_documents
@@ -18,8 +19,10 @@ _ALLOWED_EXTENSIONS = {".txt", ".md"}
 @router.post("", response_model=IngestResponse)
 async def ingest_documents(
     files: list[UploadFile] = File(...),
-    tenant_id: str = Form(default="default"),
+    tenant_id: Optional[str] = Form(default=None),
+    api_key: str = Depends(verify_api_key),
 ) -> IngestResponse:
+    tenant_id = authorize_tenant(api_key, tenant_id)  # 400/403 before reading any file
     documents: list[Document] = []
 
     for f in files:
