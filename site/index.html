@@ -90,7 +90,7 @@
       <p class="sub">Most RAG tutorials wire an LLM straight to a vector store, with no auth, no tenant boundaries and API keys in the script. This is a small, honest reference implementation of the production version.</p>
       <div class="grid">
         <div class="cell"><h3>Secure by default</h3><p>API-key auth, rate limiting, a CORS allow-list, upload size and type checks, and zero secrets in source control.</p></div>
-        <div class="cell"><h3>Multi-tenant</h3><p>Every chunk carries a <code>tenant_id</code>, and retrieval is filtered by it, so one customer's documents never reach another's answers.</p></div>
+        <div class="cell"><h3>Multi-tenant</h3><p>Every chunk carries a <code>tenant_id</code>, and retrieval is filtered by it, so one customer's documents never reach another's answers. API keys can be bound to the tenants they may use.</p></div>
         <div class="cell"><h3>Provider-agnostic</h3><p>Swap OpenAI for Llama-3 (Groq or Together) or a free local model via Ollama, and Chroma for Pinecone, with one environment variable.</p></div>
         <div class="cell"><h3>Grounded answers</h3><p>The model answers only from retrieved context and returns the source snippets, so claims can be checked.</p></div>
         <div class="cell"><h3>Tested</h3><p>A pytest suite covers auth enforcement and chunking, with CI and secret scanning on every push.</p></div>
