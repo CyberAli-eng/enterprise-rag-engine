@@ -8,13 +8,17 @@ Secure Retrieval-Augmented Generation service that connects unstructured corpora
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![CI](https://github.com/CyberAli-eng/enterprise-rag-engine/actions/workflows/ci.yml/badge.svg)
 
+[![Demo: two tenants ask the same question; only the tenant that owns the document gets an answer](docs/demo.gif)](https://cyberali-eng.github.io/enterprise-rag-engine/#demo)
+
+▶ **[Watch the 2-minute demo with voice-over](https://cyberali-eng.github.io/enterprise-rag-engine/#demo)** · [Project page & API docs](https://cyberali-eng.github.io/enterprise-rag-engine/)
+
 ## Why this exists
 
 Most RAG tutorials wire an LLM straight to a vector store with no auth, no tenant boundaries, and API keys hardcoded in a script. This project is the opposite: a small, honest reference implementation of what "production-grade" actually requires —
 
 - **Secure by default** — API-key auth, rate limiting, CORS allow-list, file-size/type validation on uploads, zero secrets in source control.
 - **Multi-tenant** — every chunk is stamped with a `tenant_id`; retrieval is filtered so one customer's documents never leak into another's answers.
-- **Provider-agnostic** — swap OpenAI ⇄ Llama-3 (via Groq/Together) and Chroma ⇄ Pinecone with one environment variable, no code changes.
+- **Provider-agnostic** — swap OpenAI ⇄ Llama-3 (via Groq/Together) ⇄ a **free local model via Ollama**, and Chroma ⇄ Pinecone, with one environment variable, no code changes.
 - **Grounded answers** — the LLM is instructed to answer only from retrieved context and to cite sources; retrieved snippets are returned alongside every answer so claims are verifiable, not trusted blindly.
 - **Actually tested** — a real pytest suite covers auth enforcement and chunking, run in CI on every push, alongside automated secret-scanning.
 
@@ -67,11 +71,29 @@ flowchart LR
 |---|---|---|
 | API | FastAPI + Pydantic v2 | async, typed, auto-generated OpenAPI docs at `/docs` |
 | Orchestration | LangChain | chunking, retriever, provider abstractions |
-| LLM | OpenAI *or* Llama-3 (Groq/Together, OpenAI-compatible) | swap via `LLM_PROVIDER` env var |
+| LLM | OpenAI, Llama-3 (Groq/Together) *or* a local model via Ollama (all OpenAI-compatible) | swap via `LLM_PROVIDER` env var |
 | Embeddings | sentence-transformers (local, free) *or* OpenAI | swap via `EMBEDDING_PROVIDER` |
 | Vector store | Chroma (local/free-tier) *or* Pinecone (managed) | swap via `VECTOR_STORE` |
 | Auth | API key header + in-memory rate limiter | good enough for a single-instance deployment |
 | CI | GitHub Actions | pytest + TruffleHog secret scanning on every push |
+
+## Run it free with a local model (Ollama)
+
+No API keys and nothing leaves your machine. Needs Docker and about 2 GB of disk space for the model.
+
+```bash
+git clone https://github.com/CyberAli-eng/enterprise-rag-engine.git
+cd enterprise-rag-engine
+cp .env.example .env
+# in .env set:
+#   API_KEYS=<any secret you choose>
+#   LLM_PROVIDER=ollama
+#   LLM_MODEL=llama3.2:3b
+#   OLLAMA_BASE_URL=http://ollama:11434/v1
+docker compose --profile local up --build
+```
+
+The `local` profile starts Ollama and a one-shot `ollama-pull` service that downloads `OLLAMA_MODEL` (default `llama3.2:3b`) on first run. The API is on `http://localhost:8000` (docs at `/docs`). Then [ingest](#ingest-documents) and [ask](#ask-a-question) as below.
 
 ## Getting started locally
 
@@ -82,7 +104,8 @@ python -m venv venv && source venv/bin/activate
 pip install -r requirements.txt
 
 cp .env.example .env
-# edit .env: set API_KEYS, and an LLM_PROVIDER + OPENAI_API_KEY (works for OpenAI, Groq, or Together)
+# edit .env: set API_KEYS, and an LLM_PROVIDER + OPENAI_API_KEY (OpenAI, Groq or Together),
+# or LLM_PROVIDER=ollama with a local Ollama running (no key needed)
 
 uvicorn app.main:app --reload
 ```
@@ -122,7 +145,8 @@ pytest -v
 ## Running with Docker
 
 ```bash
-docker compose up --build
+docker compose up --build                  # hosted LLM (OpenAI / Groq / Together)
+docker compose --profile local up --build  # free local LLM via Ollama
 ```
 
 ## Deployment (free-tier friendly)
