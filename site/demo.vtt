@@ -1,0 +1,37 @@
+WEBVTT
+
+1
+00:00:00.400 --> 00:00:11.152
+Hi everyone. In this short demo, I'll show you Enterprise RAG Engine, an open-source project I built so companies can chat with their own documents, safely.
+
+2
+00:00:12.352 --> 00:00:31.752
+Most retrieval-augmented generation demos connect a language model straight to a vector database. There's no login, no separation between customers, and the API keys sit inside the code. In a real company, that's a serious risk: one client's documents can leak into another client's answers.
+
+3
+00:00:32.952 --> 00:00:50.442
+This engine fixes that. Every document is tagged with a tenant ID when it's uploaded, and every search is filtered by that same tenant, so each company only ever sees its own data. Answers come only from your documents, with the exact sources cited, so you can check them.
+
+4
+00:00:51.642 --> 00:00:59.442
+Let's see it running. Without a valid API key, the service simply refuses the request with a 401.
+
+5
+00:01:00.642 --> 00:01:08.460
+Now I upload two documents: Acme's leave policy, and Globex's pricing guide, each under its own tenant.
+
+6
+00:01:09.660 --> 00:01:21.672
+Now I ask, as Acme: how many days of paid annual leave do I get? The answer comes back: twenty-four days per calendar year, citing Acme's leave policy as the source.
+
+7
+00:01:22.872 --> 00:01:38.374
+Now the exact same question, but as Globex. Globex never uploaded a leave policy, so the engine says it doesn't have enough information. It only searched Globex's own pricing guide. Acme's data stayed completely private.
+
+8
+00:01:39.574 --> 00:01:53.574
+Under the hood it's FastAPI and LangChain. You can switch between OpenAI, Llama 3, or a local model, and between Chroma and Pinecone, with a single setting, and start everything with one docker compose command.
+
+9
+00:01:54.774 --> 00:02:03.125
+The code is open source on GitHub. Try it out, and if it's useful, a star really helps. Thanks for watching!

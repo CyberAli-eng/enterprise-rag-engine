@@ -27,10 +27,12 @@ class Settings(BaseSettings):
     rate_limit_per_minute: int = 60
 
     # --- LLM provider ---
-    llm_provider: Literal["openai", "groq", "together"] = "openai"
+    llm_provider: Literal["openai", "groq", "together", "ollama"] = "openai"
     llm_model: str = "gpt-4o-mini"
     openai_api_key: Optional[str] = None
     openai_api_base: Optional[str] = None  # override for OpenAI-compatible endpoints (Groq/Together/OpenRouter)
+    # Local models via Ollama's OpenAI-compatible API (no API key needed).
+    ollama_base_url: str = "http://localhost:11434/v1"
     llm_temperature: float = 0.0
 
     # --- Embeddings ---

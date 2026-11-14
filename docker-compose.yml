@@ -8,5 +8,27 @@ services:
     volumes:
       - chroma_data:/app/chroma_db
 
+  # --- Free local LLM (opt-in): docker compose --profile local up --build ---
+  # Set LLM_PROVIDER=ollama and OLLAMA_BASE_URL=http://ollama:11434/v1 in .env.
+  ollama:
+    image: ollama/ollama:0.12.6
+    profiles: ["local"]
+    volumes:
+      - ollama_models:/root/.ollama
+
+  # One-shot: downloads the model into the ollama service, then exits.
+  ollama-pull:
+    image: ollama/ollama:0.12.6
+    profiles: ["local"]
+    depends_on:
+      - ollama
+    environment:
+      OLLAMA_HOST: ollama:11434
+    env_file:
+      - .env
+    entrypoint: ["/bin/sh", "-c", "until ollama list >/dev/null 2>&1; do sleep 1; done; ollama pull \"$${OLLAMA_MODEL:-llama3.2:3b}\""]
+    restart: "no"
+
 volumes:
   chroma_data:
+  ollama_models:
