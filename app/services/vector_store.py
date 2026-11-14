@@ -81,6 +81,8 @@ def add_documents(
 
 
 def similarity_search(query: str, k: int, tenant_id: Optional[str] = None) -> list[Document]:
+    """Search within exactly one tenant. A missing tenant_id means the "default"
+    tenant (the same rule add_documents uses), never "all tenants"."""
     store = get_vector_store()
-    filter_ = {"tenant_id": tenant_id} if tenant_id else None
+    filter_ = {"tenant_id": tenant_id or "default"}
     return store.similarity_search(query, k=k, filter=filter_)
