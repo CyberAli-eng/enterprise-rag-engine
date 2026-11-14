@@ -167,12 +167,14 @@ Live demo: _add your deployed URL here once hosted_.
 - No API key, database URL, or model credential is ever hardcoded — everything is read from environment variables via `app/config.py`.
 - `.env` is git-ignored; only `.env.example` (placeholders) is committed.
 - CI runs TruffleHog on every push to catch any credential that slips through review.
-- Per-tenant metadata filtering prevents cross-tenant document leakage at the retrieval layer, not just at the application layer.
+- Per-tenant metadata filtering prevents cross-tenant document leakage at the retrieval layer, not just at the application layer. Every search is scoped to exactly one tenant; a request without `tenant_id` uses the `default` tenant, never all tenants.
+- **Trust boundary:** API keys are service-level, so any valid key may pass any `tenant_id`. That fits a trusted backend calling the engine on behalf of its users. Before exposing the API directly to end users, bind keys to tenants or put JWT auth in front (see Roadmap).
 
 ## Roadmap
 
 - [ ] Swap in-memory rate limiting for Redis when running multiple instances
 - [ ] Add JWT-based user auth in front of the API-key service layer
+- [ ] Bind API keys to the tenants they may access
 - [ ] Streaming responses (SSE) for the `/query` endpoint
 - [ ] PDF/DOCX ingestion support alongside `.txt`/`.md`
 

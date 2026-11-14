@@ -6,8 +6,9 @@ from app.services.llm import get_llm
 
 
 @pytest.fixture(autouse=True)
-def fresh_settings(monkeypatch):
+def fresh_settings(monkeypatch, tmp_path):
     """Each test sets its own env; clear the cached settings/client around it."""
+    monkeypatch.chdir(tmp_path)  # settings also read ./.env; keep a developer's local file out of the test
     for var in ("LLM_PROVIDER", "LLM_MODEL", "OPENAI_API_KEY", "OPENAI_API_BASE", "OLLAMA_BASE_URL"):
         monkeypatch.delenv(var, raising=False)
     get_settings.cache_clear()
